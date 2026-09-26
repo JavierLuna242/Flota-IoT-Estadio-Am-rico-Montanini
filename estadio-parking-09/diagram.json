@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp1", "top": 160, "left": 110, "attrs": {} },
+    { "type": "wokwi-hc-sr04", "id": "us1", "top": 60, "left": 260, "attrs": {} },
+    {
+      "type": "wokwi-servo",
+      "id": "barrera1",
+      "top": 260,
+      "left": 260,
+      "attrs": { "horn": "long" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_link1",
+      "top": 220,
+      "left": 30,
+      "attrs": { "color": "green" }
+    },
+    { "type": "wokwi-resistor", "id": "r1", "top": 250, "left": 10, "attrs": { "value": "220" } }
+  ],
+  "connections": [
+    [ "esp1:5V", "us1:VCC", "red", [] ],
+    [ "esp1:GND.1", "us1:GND", "black", [] ],
+    [ "esp1:D5", "us1:TRIG", "blue", [] ],
+    [ "esp1:D18", "us1:ECHO", "yellow", [] ],
+    [ "esp1:5V", "barrera1:V+", "red", [] ],
+    [ "esp1:GND.2", "barrera1:GND", "black", [] ],
+    [ "esp1:D19", "barrera1:PWM", "green", [] ],
+    [ "esp1:D2", "r1:1", "orange", [] ],
+    [ "r1:2", "led_link1:A", "orange", [] ],
+    [ "led_link1:C", "esp1:GND.3", "black", [] ]
+  ],
+  "dependencies": {}
+}

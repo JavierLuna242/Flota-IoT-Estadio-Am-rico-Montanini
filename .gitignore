@@ -1,0 +1,20 @@
+# Secretos
+.env
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# PlatformIO / Wokwi
+.pio/
+
+# Logs y datos generados
+*.log
+*.db
+
+# Editor
+.vscode/

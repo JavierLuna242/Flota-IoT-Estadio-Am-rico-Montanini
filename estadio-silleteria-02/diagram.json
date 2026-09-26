@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp1", "top": 140, "left": 110, "attrs": {} },
+    { "type": "wokwi-dht22", "id": "dht1", "top": 60, "left": 260, "attrs": {} },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "pot_co1",
+      "top": 240,
+      "left": 260,
+      "attrs": { "value": "50" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led_link1",
+      "top": 200,
+      "left": 30,
+      "attrs": { "color": "green" }
+    },
+    { "type": "wokwi-resistor", "id": "r1", "top": 230, "left": 10, "attrs": { "value": "220" } }
+  ],
+  "connections": [
+    [ "esp1:3V3", "dht1:VCC", "red", [] ],
+    [ "esp1:GND.1", "dht1:GND", "black", [] ],
+    [ "esp1:D15", "dht1:SDA", "green", [] ],
+    [ "esp1:3V3", "pot_co1:VCC", "red", [] ],
+    [ "esp1:GND.2", "pot_co1:GND", "black", [] ],
+    [ "esp1:D34", "pot_co1:SIG", "yellow", [] ],
+    [ "esp1:D2", "r1:1", "orange", [] ],
+    [ "r1:2", "led_link1:A", "orange", [] ],
+    [ "led_link1:C", "esp1:GND.3", "black", [] ]
+  ],
+  "dependencies": {}
+}

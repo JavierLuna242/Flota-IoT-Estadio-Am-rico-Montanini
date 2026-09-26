@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estadio Américo Montanini · Telemetría</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #FAF7F2;
+    --card: #FFFFFF;
+    --text: #4A4453;
+    --text-soft: #9A93A6;
+    --mint: #B8E6D5;
+    --mint-strong: #7FCBAE;
+    --lavender: #D9CBF0;
+    --lavender-strong: #B39DDB;
+    --peach: #FFD9C0;
+    --peach-strong: #FFB088;
+    --sky: #C3E4F0;
+    --sky-strong: #8FCBE0;
+    --pink: #F5C6D6;
+    --pink-strong: #E8A0BC;
+    --shadow: 0 4px 20px rgba(150, 130, 160, 0.12);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  header {
+    padding: 28px 32px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  header h1 {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin: 0;
+  }
+
+  header h1 span {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-soft);
+  }
+
+  .live {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    font-weight: 600;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--mint-strong);
+    animation: pulse 1.6s infinite;
+  }
+
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(127, 203, 174, 0.5); }
+    70% { box-shadow: 0 0 0 8px rgba(127, 203, 174, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(127, 203, 174, 0); }
+  }
+
+  .summary {
+    display: flex;
+    gap: 16px;
+    padding: 0 32px 20px;
+    flex-wrap: wrap;
+  }
+
+  .summary-card {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 16px 22px;
+    box-shadow: var(--shadow);
+    min-width: 150px;
+  }
+
+  .summary-card .num {
+    font-size: 1.6rem;
+    font-weight: 800;
+  }
+
+  .summary-card .label {
+    font-size: 0.8rem;
+    color: var(--text-soft);
+    font-weight: 600;
+  }
+
+  .devices {
+    display: flex;
+    gap: 10px;
+    padding: 0 32px 20px;
+    overflow-x: auto;
+  }
+
+  .chip {
+    flex-shrink: 0;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border: none;
+    color: var(--text);
+    opacity: 0.55;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+
+  .chip:hover { transform: translateY(-1px); }
+  .chip.active { opacity: 1; box-shadow: var(--shadow); }
+
+  main {
+    padding: 0 32px 40px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .panel {
+    background: var(--card);
+    border-radius: 22px;
+    padding: 22px;
+    box-shadow: var(--shadow);
+  }
+
+  .panel h2 {
+    margin: 0 0 16px;
+    font-size: 1.05rem;
+    font-weight: 800;
+  }
+
+  .kpis {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .kpi {
+    background: var(--bg);
+    border-radius: 14px;
+    padding: 12px 16px;
+    min-width: 110px;
+  }
+
+  .kpi .v { font-size: 1.2rem; font-weight: 800; }
+  .kpi .k { font-size: 0.75rem; color: var(--text-soft); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+
+  canvas { max-height: 320px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 10px 8px;
+    border-bottom: 1px solid #F0ECE4;
+  }
+
+  th { color: var(--text-soft); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; }
+
+  .empty {
+    color: var(--text-soft);
+    font-style: italic;
+    padding: 20px 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Estadio Américo Montanini <span>Centro de telemetría · flota de 10 dispositivos</span></h1>
+  <div class="live"><span class="dot"></span> En vivo</div>
+</header>
+
+<div class="summary" id="summary"></div>
+
+<div class="devices" id="devices"></div>
+
+<main>
+  <div class="panel">
+    <h2 id="tituloPanel">Selecciona un dispositivo</h2>
+    <div class="kpis" id="kpis"></div>
+    <canvas id="grafico"></canvas>
+  </div>
+
+  <div class="panel">
+    <h2>Últimas lecturas</h2>
+    <div id="tablaContenedor"><p class="empty">Sin datos aún.</p></div>
+  </div>
+</main>
+
+<script>
+const PALETA = ['#7FCBAE', '#B39DDB', '#FFB088', '#8FCBE0', '#E8A0BC', '#C9D97F', '#F0C46A'];
+const FONDOS = ['#B8E6D5', '#D9CBF0', '#FFD9C0', '#C3E4F0', '#F5C6D6', '#E5EEBB', '#FBE3B8'];
+
+let dispositivoActivo = null;
+let chart = null;
+
+function colorPara(indice, fuerte = true) {
+  const paleta = fuerte ? PALETA : FONDOS;
+  return paleta[indice % paleta.length];
+}
+
+async function cargarResumen() {
+  const r = await fetch('/api/resumen');
+  const d = await r.json();
+  document.getElementById('summary').innerHTML = `
+    <div class="summary-card"><div class="num">${d.total_mensajes}</div><div class="label">Mensajes totales</div></div>
+    <div class="summary-card"><div class="num">${d.dispositivos_activos}</div><div class="label">Dispositivos con datos</div></div>
+  `;
+}
+
+async function cargarDispositivos() {
+  const r = await fetch('/api/devices');
+  const lista = await r.json();
+
+  const cont = document.getElementById('devices');
+  cont.innerHTML = '';
+
+  lista.forEach((dev, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'chip' + (dev.device_id === dispositivoActivo ? ' active' : '');
+    btn.style.background = colorPara(i, false);
+    btn.textContent = dev.device_name || dev.device_id;
+    btn.onclick = () => {
+      dispositivoActivo = dev.device_id;
+      document.getElementById('tituloPanel').textContent = dev.device_name || dev.device_id;
+      cargarDispositivos();
+      cargarDatos();
+    };
+    cont.appendChild(btn);
+  });
+
+  if (!dispositivoActivo && lista.length > 0) {
+    dispositivoActivo = lista[0].device_id;
+    document.getElementById('tituloPanel').textContent = lista[0].device_name || lista[0].device_id;
+    cargarDispositivos();
+    cargarDatos();
+  }
+}
+
+async function cargarDatos() {
+  if (!dispositivoActivo) return;
+
+  const r = await fetch(`/api/data?device_id=${encodeURIComponent(dispositivoActivo)}&limite=200`);
+  const filas = await r.json();
+
+  if (filas.length === 0) {
+    document.getElementById('kpis').innerHTML = '';
+    document.getElementById('tablaContenedor').innerHTML = '<p class="empty">Sin datos aún.</p>';
+    if (chart) { chart.destroy(); chart = null; }
+    return;
+  }
+
+  // Detectar campos numéricos presentes
+  const camposNumericos = new Set();
+  const camposTodos = new Set();
+  filas.forEach(f => {
+    Object.entries(f.payload).forEach(([k, v]) => {
+      camposTodos.add(k);
+      if (typeof v === 'number') camposNumericos.add(k);
+    });
+  });
+
+  // KPIs con el último valor
+  const ultimo = filas[filas.length - 1].payload;
+  document.getElementById('kpis').innerHTML = Array.from(camposTodos).map(k => `
+    <div class="kpi"><div class="v">${ultimo[k]}</div><div class="k">${k}</div></div>
+  `).join('');
+
+  // Gráfico
+  const etiquetas = filas.map(f => new Date(f.recibido_en).toLocaleString('es-CO', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }));
+  const datasets = Array.from(camposNumericos).map((campo, i) => ({
+    label: campo,
+    data: filas.map(f => f.payload[campo] ?? null),
+    borderColor: colorPara(i, true),
+    backgroundColor: colorPara(i, false),
+    tension: 0.35,
+    borderWidth: 2,
+    pointRadius: 0,
+  }));
+
+  if (chart) chart.destroy();
+  chart = new Chart(document.getElementById('grafico'), {
+    type: 'line',
+    data: { labels: etiquetas, datasets },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom', labels: { font: { family: 'Nunito', weight: '600' } } } },
+      scales: {
+        x: { grid: { display: false } },
+        y: { grid: { color: '#F0ECE4' } }
+      }
+    }
+  });
+
+  // Tabla de últimas lecturas (las 15 más recientes)
+  const recientes = filas.slice(-15).reverse();
+  const columnas = Array.from(camposTodos);
+  document.getElementById('tablaContenedor').innerHTML = `
+    <table>
+      <thead><tr><th>Hora</th>${columnas.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+      <tbody>
+        ${recientes.map(f => `
+          <tr>
+            <td>${new Date(f.recibido_en).toLocaleString('es-CO')}</td>
+            ${columnas.map(c => `<td>${f.payload[c] ?? '—'}</td>`).join('')}
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function actualizarTodo() {
+  await cargarResumen();
+  await cargarDispositivos();
+  await cargarDatos();
+}
+
+actualizarTodo();
+setInterval(actualizarTodo, 15000); // refresco cada 15s
+</script>
+
+</body>
+</html>
