@@ -155,8 +155,6 @@ Bitácora de los principales obstáculos encontrados durante el desarrollo y có
 
 ## Estructura del repositorio
 
-> ⚠️ Ajusta esta sección si tus carpetas reales tienen otros nombres — está basada en los módulos que se construyeron durante el desarrollo, no en una verificación directa del árbol de archivos subido.
-
 ```
 .
 ├── README.md
